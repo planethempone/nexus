@@ -14,21 +14,21 @@ Following the principle that “Man is the measure of all things,” the Policy 
 The Policy Nexus functions through a three-dimensional relational framework. It acts as a bridge between three distinct spheres to ensure that policy is not just top-down, but interactive and responsive.
 
 
-A. The Regulatory-Legal Interface
+### A. The Regulatory-Legal Interface
 
 This is the formal connection to current laws (like GDPR, the Common Agricultural Policy in the EU, or local building codes).
 The Goal: To translate complex legal requirements into actionable guides for the cooperative.
 The Workings: For example, when building with hempcrete, the Policy Nexus works to align sustainable methods with strict urban safety regulations, effectively “lobbying” through documented success for more flexible building standards.
 
 
-B. The Financial-Economic Interface
+### B. The Financial-Economic Interface
 
 This connects the cooperative to the Fintech Shareholdership and broader capital markets.
 The Goal: To create a “flow of resources” that can be appropriated as common assets.
 The Workings: It facilitates the transformation of individual investments (buying a share on the INVEST platform) into industrial-scale infrastructure (like decortication plants or 3D-printing hubs), ensuring the capital remains under democratic control.
 
 
-C. The Civic-Participatory Interface
+### C. The Civic-Participatory Interface
 
 This is the heart of the “Human Right” argument. It ensures that those impacted by a policy have the tools to change it.
 The Goal: To prevent institutional “insularity” (where groups become closed off) by keeping data and decision-making open to the public.
