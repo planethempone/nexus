@@ -1,0 +1,106 @@
+To protect the Green Renaissance canopy, the Nexus must act as an early-warning system. We achieve this by deploying a Python-based Anomaly Detection Service. This service periodically queries the Sentinel Hub Statistical API, calculates the mean NDVI for a specific field, and triggers a localized alert if values dip below the critical 0.4 threshold.
+
+
+### The "Vitality Guard" Logic
+
+
+The script follows a "Sensing-to-Signaling" flow. It is designed to run as a scheduled task (Cron job) within the TDCC infrastructure.
+
+
+Python Script: ghl_anomaly_alert.py
+Python
+
+
+import requests
+import json
+from datetime import datetime, timedelta
+
+# --- CONFIGURATION ---
+SENTINEL_HUB_CLIENT_ID = "YOUR_CLIENT_ID"
+SENTINEL_HUB_CLIENT_SECRET = "YOUR_CLIENT_SECRET"
+NDVI_THRESHOLD = 0.4
+CULTIVATOR_ALERT_WEBHOOK = "https://alerts.planethemp.one/webhook"
+
+# Field Polygon (e.g., a specific farm in Antwerp)
+FIELD_GEOMETRY = {
+    "type": "Polygon",
+    "coordinates": [[[4.42, 51.24], [4.43, 51.24], [4.43, 51.25], [4.42, 51.25], [4.42, 51.24]]]
+}
+
+def get_access_token():
+    """Authenticates with Sentinel Hub OAuth2."""
+    data = {
+        "client_id": SENTINEL_HUB_CLIENT_ID,
+        "client_secret": SENTINEL_HUB_CLIENT_SECRET,
+        "grant_type": "client_credentials"
+    }
+    response = requests.post("https://services.sentinel-hub.com/oauth/token", data=data)
+    return response.json()['access_token']
+
+def check_ndvi_vitality():
+    """Queries the Statistics API for the latest NDVI average."""
+    token = get_access_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Statistical API Request Payload
+    payload = {
+        "input": {
+            "bounds": {"geometry": FIELD_GEOMETRY},
+            "data": [{"type": "S2L2A"}]
+        },
+        "aggregation": {
+            "timeRange": {
+                "from": (datetime.now() - timedelta(days=5)).isoformat() + "Z",
+                "to": datetime.now().isoformat() + "Z"
+            },
+            "aggregationInterval": {"of": "P1D"},
+            "evalscript": """
+                //VERSION=3
+                function setup() {
+                  return {
+                    input: [{ bands: ["B04", "B08", "SCL"] }],
+                    output: [{ id: "stats", bands: 1 }]
+                  };
+                }
+                function evaluatePixel(samples) {
+                  let ndvi = (samples.B08 - samples.B04) / (samples.B08 + samples.B04);
+                  return [ndvi];
+                }
+            """
+        }
+    }
+
+    response = requests.post("https://services.sentinel-hub.com/api/v1/statistics", json=payload, headers=headers)
+    stats = response.json()['data']
+    
+    if stats:
+        latest_avg = stats[-1]['outputs']['stats']['bands'][0]['stats']['mean']
+        
+        if latest_avg < NDVI_THRESHOLD:
+            trigger_alert(latest_avg)
+        else:
+            print(f"✅ Vitality Check Passed: NDVI at {latest_avg:.2f}")
+
+def trigger_alert(value):
+    """Sends an automated emergency signal to the Cultivator."""
+    alert_payload = {
+        "level": "CRITICAL",
+        "message": f"🚨 BIOMASS ANOMALY DETECTED. NDVI dropped to {value:.2f}.",
+        "action_required": "Inspect field for irrigation failure or pest stress immediately.",
+        "timestamp": datetime.now().isoformat()
+    }
+    requests.post(CULTIVATOR_ALERT_WEBHOOK, json=alert_payload)
+    print(f"⚠️ Alert Dispatched! Current NDVI: {value:.2f}")
+
+if __name__ == "__main__":
+    check_ndvi_vitality()
+
+
+
+## 3. Strategic Enhancements
+
+Cloud Filtering: The evalscript above includes the Scene Classification Layer (SCL). In a production version, we filter out pixels marked as "Cloud" or "Cloud Shadow" to avoid false positives during heavy weather.
+
+The "Critical Growth" Window: The Nexus can be configured to only run this script during the high-sequestration window (typically Days 30–90 of the hemp lifecycle), where an NDVI drop indicates a high risk to the Global Hemp Ledger's collateral.
+
+Smart Contract Integration: If an anomaly persists for more than 3 consecutive satellite passes, the Nexus can automatically adjust the "Risk Rating" of the associated $HEMP$ tokens on-chain.
